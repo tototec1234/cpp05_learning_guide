@@ -1,7 +1,16 @@
 # CPP05 予習教材（tvaroux 向け）
 
+作成日時: 2026-09-08 21:00:00 +0900
+改訂日時: 2026-09-09 05:52:10 +0900
+
 対象: [tomtomvx/cpp05-09](https://github.com/tomtomvx/cpp05-09) で CPP05 に着手している tvaroux。  
 言語: 日本語。完成例は載せない。疑似コードとスケルトンだけを示す。
+
+## 公開範囲と作成状況
+
+[`main`](https://github.com/tototec1234/cpp05_learning_guide/tree/main) ブランチでは、README と `CPP05_テーマと発展.md`、ex00関連の教材を公開している。
+ex01からex03の教材は現在作成中であり、[`wip/cpp05-learning-guide`](https://github.com/tototec1234/cpp05_learning_guide/tree/wip/cpp05-learning-guide) ブランチに校閲待ちの状態で置いている。
+下記のファイル一覧には、公開済みのファイルとWIPブランチで作成中のファイルを含めて記載している。
 
 ## 使い方
 
