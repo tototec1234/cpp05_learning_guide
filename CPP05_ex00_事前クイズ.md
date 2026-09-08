@@ -58,7 +58,7 @@ increment は権限が上がるので数値は減る。3 → 2。
 <summary>模範回答（クリックで表示）</summary>
 
 `std::exception` を直接または間接に継承していること。  
-`std::logic_error` 経由でも技術的には捕まる。課題書の例は `std::exception` 直指定なので、提出では `std::exception` を直接継承する。
+`std::logic_error` 経由でも技術的には捕まる。課題書の例は `std::exception` 直指定なので、この教材では `std::exception` を直接継承する実装を推奨する。ただし、直接継承は課題の必須条件ではない。
 
 </details>
 
@@ -86,7 +86,7 @@ increment は権限が上がるので数値は減る。3 → 2。
 <summary>模範回答（クリックで表示）</summary>
 
 Bureaucrat は OCF 必須。デフォルトコンストラクタ、コピーコンストラクタ、代入演算子、デストラクタを書く。  
-例外クラスは `what()` があれば足りる。
+例外クラスは OCF が免除される。`std::exception` を直接継承する場合は `what()` を定義する。標準例外クラスを基底にする場合は、基底クラスの `what()` を利用できることもある。
 
 </details>
 
