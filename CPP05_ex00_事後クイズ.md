@@ -3,18 +3,18 @@
 > 対象: `CPP05_ex00_解説.md` を読んだあと、実装する前または実装の途中  
 > 目的: 評価で口頭説明できるか、いまのコードの誤解を自分で直せるか
 
-先に自分の回答を書く。そのあと `▶︎模範回答（クリックで表示）` を開く。
+先に自分の回答を書く。そのあと `模範回答（クリックで表示）` をクリックして開き確認すること。
 
 ---
 
-### Q1. 等級 1 の官僚に `incrementGrade()` を呼ぶと何が起きるか。内部状態（`_grade`）はどうなっているべきか。
+### Q1. 等級 1 の官僚に対して `incrementGrade()` を呼ぶと何が起きるか。内部状態（`_grade`）はどうなっているべきか。
 
 **あなたの回答**:
 
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-`GradeTooHighException`を送出（`throw`）する。`_grade`は1のまま。先に減らしてから例外を送出すると`_grade`が0のまま残り、strong保証を満たさない。
+`GradeTooHighException`を送出（`throw`）する。`_grade`は1のまま。先に減らしてから例外を送出すると`_grade`が0のまま残り、strong保証（発展）を満たさない。
 
 詳細: [4.4 発展: 例外安全保証](./CPP05_テーマと発展.md#exceptions-safety)
 
@@ -22,7 +22,7 @@
 
 ---
 
-### Q2. いまの誤解の材料。次の関数の欠陥を2つ述べよ。出典は GitHub `tomtomvx/cpp05-09` の `05/ex00`（2026-09-08）。ヘッダには`HIGHEST_GRADE`と`LOWEST_GRADE`が定義されているものとする。
+### Q2. いまの誤解の材料。次の関数の問題点を2つ述べよ。出典は GitHub `tomtomvx/cpp05-09` の `05/ex00`（2026-09-08）。ヘッダには`HIGHEST_GRADE`と`LOWEST_GRADE`が定義されているものとする。
 
 ```cpp
 void Bureaucrat::checkGrade(int const grade) const
@@ -39,24 +39,24 @@ void Bureaucrat::checkGrade(int const grade) const
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-1. `grade > 150`でも`GradeTooHighException`を送出している。ここでは`GradeTooLowException`を送出する。  
-2. 定義済みの`HIGHEST_GRADE`と`LOWEST_GRADE`を使わず、マジックナンバーの1と150を直接記述している。
+1. 仕様違反: `grade > 150`の分岐でも`GradeTooHighException`を送出している。この分岐では`GradeTooLowException`を送出する。
+2. 保守性: 定義済みの`HIGHEST_GRADE`と`LOWEST_GRADE`を使わず、マジックナンバーの1と150を直接記述している。課題の必須ではない。
 
-この関数はコンストラクタ、`incrementGrade()`、`decrementGrade()`から呼ばれるため、一つ目の誤りがすべての経路へ影響する。
+出典の実装では、この関数はコンストラクタ、`incrementGrade()`、`decrementGrade()`から呼ばれる。一つ目の誤りが、それらの経路すべてに影響する。
 
 </details>
 
 ---
 
-### Q3. 同じリポジトリでクラス名は `Bureaucrat`、ファイル名は `Bureaucat.hpp` である。評価上の問題は何か。インクルード上の問題は何か。
+### Q3. 同じリポジトリでクラス名は `Bureaucrat`、ファイル名は `Bureaucat.hpp` である。評価上の問題は何か。インクルードでは何が起きるか。
 
 **あなたの回答**:
 
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-評価: 必須ファイル `Bureaucrat.hpp` / `Bureaucrat.cpp` がない。  
-コンパイル: `main.cpp` が `"Bureaucat.hpp"` を読めばビルドは通る。ファイル名の一致はコンパイラではなく課題規則の問題。
+評価: 必須ファイル `Bureaucrat.hpp` / `Bureaucrat.cpp` がない。
+インクルード: インクルード名とファイル名が一致していれば問題は起きない。`main.cpp` が `"Bureaucat.hpp"` を読めばビルドは通る。`main.cpp` が `"Bureaucrat.hpp"` を読むとファイルを開けない。ファイル名をクラス名に合わせるのは、コンパイラではなく課題規則の問題である。
 
 </details>
 
@@ -69,15 +69,15 @@ void Bureaucrat::checkGrade(int const grade) const
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-ビルドのリンク段階で、`what()`または例外クラスの仮想関数表に対する未定義シンボルとして表面化する。
+ビルドのリンク段階で、`what()`または例外クラスの仮想関数表が未定義シンボルとして表面化することがある。
 
-これは、実行時に`what()`を呼んだ瞬間のエラーではない。例外型を構築するコードを含むオブジェクトファイルがリンクされれば、実行時にその経路を通る前でもリンクエラーになり得る。
+これは、実行時に`what()`を呼んだ瞬間のエラーではない。例外型の仮想関数表を必要とするコードがリンク対象に含まれれば、実行時にその経路を通る前でもリンクエラーになり得る。
 
 </details>
 
 ---
 
-### Q5. コピー代入のあと、左辺の名前と等級はどうなるべきか。次は正しいか。
+### Q5. 次のコードでコピー代入したあと、左辺の名前と等級はどうなるべきか。
 
 ```
 Bureaucrat a("Alice", 50);
@@ -90,8 +90,8 @@ a = b;
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-名前は Alice のまま。等級は 100。  
-`_name` は const なので代入できない。これが仕様どおり。
+名前は Alice のまま。等級は 100。
+課題どおり、`_name` は const なので代入できない。
 
 </details>
 
@@ -108,7 +108,7 @@ C. `new` していなければリークする
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-B。構築が完了した基底クラスとデータメンバは、構築と逆の順序で破棄される。オブジェクト全体は完成していないため、`Bureaucrat`自身のデストラクタは呼ばれない。
+B。選択肢Bの「メンバだけ」は粗い。正確には、構築が完了した基底クラスとデータメンバが、構築と逆の順序で破棄される。オブジェクト全体は完成していないため、`Bureaucrat`自身のデストラクタは呼ばれない。
 
 `new Bureaucrat(...)`のコンストラクタが失敗した場合、`new`式が確保したオブジェクト用の領域には、対応する`operator delete`が呼ばれる。ただし、コンストラクタ本体で別途確保し、RAIIで管理していないリソースはリークする可能性がある。
 
@@ -123,8 +123,8 @@ B。構築が完了した基底クラスとデータメンバは、構築と逆�
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-派生を先に書く。基底を先に書くと、TooHigh も全部 `std::exception` に吸われ、個別の catch に届かない。  
-課題は基底だけで捕まえてよい。個別に分けるなら順序が必要。
+派生を先に書く。基底を先に書くと、`GradeTooHighException`も`GradeTooLowException`も`std::exception`のcatchに捕捉され、個別のcatchに届かない。
+課題は基底だけで捕捉してよい。個別に分けるなら順序が必要。
 
 </details>
 
@@ -137,8 +137,8 @@ B。構築が完了した基底クラスとデータメンバは、構築と逆�
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-#define: 型なし。クラスの外にも漏れる。デバッガに名前が残らないことがある。  
-static const int: int。クラススコープ。メンバとして見える。C++98 では整数型ならヘッダ内初期化が可能。
+#define: 型なし。クラスの外にも漏れる。デバッガに名前が残らないことがある。
+static const int: 型はint。クラススコープ。デバッガにメンバとして名前が見える。C++98では整数型ならヘッダ内初期化が可能。
 
 </details>
 
@@ -168,7 +168,7 @@ static const int: int。クラススコープ。メンバとして見える。C+
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-指定形式:
+指定形式（角括弧は出さない。末尾はピリオド。改行は形式に含まれない）:
 
 ```text
 <name>, bureaucrat grade <grade>.
@@ -180,7 +180,7 @@ static const int: int。クラススコープ。メンバとして見える。C+
 Alice, bureaucrat grade 42.
 ```
 
-`operator<<`内で改行するか、呼び出し側で`std::endl`を付けるかは設計上の選択になる。ただし、最終的な出力メッセージには改行を付ける。課題書が指定する文字列本体には末尾のピリオドが含まれる。
+課題書が指定するのはこの文字列本体である。改行を`operator<<`に入れるか、呼び出し側で`std::endl`を付けるかは設計上の選択である。`operator<<`に改行を入れず、呼び出し側で`std::endl`を付ける実装が多い。
 
 </details>
 
@@ -204,16 +204,16 @@ Alice, bureaucrat grade 42.
 
 ---
 
-### Q12. `const char *what() const throw()`に現れる二つの`const`相当の指定と、`throw()`の意味をそれぞれ説明せよ。
+### Q12. `const char *what() const throw()`に現れる二つの`const`と、`throw()`の意味をそれぞれ説明せよ。
 
 **あなたの回答**:
 
 <details>
 <summary>模範回答（クリックで表示）</summary>
 
-- `const char *`: 戻り値が、関数の呼び出し側から文字を書き換えられない文字列を指すポインタである
+- `const char *`: 戻り値はポインタである。指し先の文字は、呼び出し側から書き換えられない。ポインタ値そのものはconstではない
 - 関数名の後ろの`const`: `what()`が例外オブジェクトの状態を変更しない
-- `throw()`: C++98の動的例外仕様で、この関数の外へ例外を送出しないことを表す
+- `throw()`: C++98 の動的例外仕様で、「この関数は例外を投げない」（この関数の外へ例外を送出しない）。C++11 の `noexcept` に近い役割を持つ古い書き方
 
 `throw()`の約束に反して例外が関数外へ出ると、C++98では`std::unexpected()`を経由し、標準の設定では`std::terminate()`に至る。
 

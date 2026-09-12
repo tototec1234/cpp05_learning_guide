@@ -6,13 +6,36 @@
 ---
 
 ## 1. ex00 からの変化
+<details>
+<summary>Design by Contract（契約による設計）の観点から言うと:</summary>
+
+C++での「契約による設計（Design by Contract: DbC）」は、関数やクラスの事前条件（Preconditions）、事後条件（Postconditions）、および不変条件（Invariants）を明確にし、コンポーネント間の義務と権利を定義する設計手法です。
+
+- 不変条件（Invariants）: オブジェクトが常に守る性質（等級は 1..150）
+- 事前条件（Preconditions）: 操作を始めてよい条件（この官僚がこの書類に署名できるか）
+- 事後条件（Postconditions）: 操作のあとで成り立つ性質（署名成功なら `_isSigned` が true。失敗なら状態は変わらない）
+
+参考: [Design by Contract Programming in C++（EventHelix）](https://www.eventhelix.com/object-oriented/design-by-contract/)
+
+</details>
 
 ```
-ex00: 1オブジェクトの不変条件（等級が 1..150）
-ex01: 2オブジェクトの関係（この官僚は、この書類に署名する権限があるか）
+ex00: クラス不変条件（1インスタンスの等級が常に 1..150）
+ex01: 操作の事前条件（この官僚が、この書類に署名する権限があるか）
+```
+「クラス不変条件 / 操作の事前条件」は Design by Contract の用語そのものです。
+
+
+平たく言うと:
+
+```
+ex00: オブジェクト単体の妥当性（等級が範囲内か）
+ex01: オブジェクト間の権限判定（この官僚がこの書類に署名できるか）
 ```
 
-比較対象が「絶対値 1 と 150」から「相手が要求する等級」に変わる。  
+
+
+比較対象が「絶対値の 『1 と 150』」から「相対値である『相手が要求する等級』」に変わる。  
 向きを間違えると、高い官僚が署名できず、低い官僚が署名できる、という逆転バグになる。
 
 ```
@@ -26,15 +49,13 @@ ex01: 2オブジェクトの関係（この官僚は、この書類に署名す�
 | 1 | 150 | 1 <= 150 | 誰でもほぼ署名できる書類 |
 | 150 | 1 | 150 <= 1 は偽 | ほぼ誰も署名できない |
 | 50 | 30 | 50 <= 30 は偽 | 足りない |
-| 30 | 30 | 30 <= 30 | 等しいので足りる（課題: higher or equal） |
-
-課題書の "higher or egal" は equal の誤字である（公開の typo 指摘がある）。等号は含める。
+| 30 | 30 | 30 <= 30 | 等しいので足りる（課題書: higher or equal） |
 
 ---
 
 ## 2. 責任の分割
 
-```
+```c++
 Bureaucrat::signForm(form):
     try:
         form.beSigned(*this)
@@ -43,7 +64,7 @@ Bureaucrat::signForm(form):
         出力: "<bureaucrat> couldn't sign <form> because <reason>."
 ```
 
-```
+```c++
 Form::beSigned(bureaucrat):
     if 官僚の等級数値 > 署名に必要な等級数値:
         throw Form::GradeTooLowException
@@ -51,7 +72,7 @@ Form::beSigned(bureaucrat):
 ```
 
 `signForm` の中で等級を自分で判定し、`beSigned` を呼ばない実装は、規則が二箇所に分かれる。  
-判定は Form が持つ。Bureaucrat は依頼とログだけがきれい。
+判定は Form が担い、Bureaucrat は依頼とログ出力だけを担うのがきれい。
 
 既に署名済みのとき、課題は何も書いていない。何もしない／メッセージだけ／例外、いずれも本文の必須ではない。評価で聞かれたら「課題に無いので、再署名は無視した」と説明できればよい。
 
@@ -84,7 +105,7 @@ private:
 
 コンストラクタの疑似コード:
 
-```
+```cpp
 Form(name, signGrade, executeGrade):
     _isSigned = false
     各等級が < 1 なら Form::GradeTooHighException
@@ -92,33 +113,30 @@ Form(name, signGrade, executeGrade):
 ```
 
 Bureaucrat と Form で例外クラスが別になる。  
-`catch (std::exception &)` ならどちらも捕まる。  
-`catch (Bureaucrat::GradeTooLowException &)` では Form の例外は捕まらない。
+```cpp
+catch (std::exception &)
+```
+ ならどちらも捕まる。  
+```cpp
+catch (Bureaucrat::GradeTooLowException &)
+```
+では Form の例外は捕まらない。
 
-前方参照: `Form.hpp` が `Bureaucrat` をポインタ／参照で使うなら、クラスの前方宣言で足りる。`getGrade()` を呼ぶ実装は `.cpp` で `Bureaucrat.hpp` をインクルードする。循環インクルードをヘッダ同士で作らない。
-
----
-
-## 4. `operator<<` で取り違える点
-
-過去のレビューコメント（提出者不明）:
-
-> 出力演算子で、実行に必要な等級を出す箇所で `getGradeToSign()` を二度呼んでいた。
-
-情報は4つある。getter を4回、別々に呼ぶ。コピペで sign を二度出すと、評価者が `<< form` を見たときに実行等級が嘘になる。
+- 前方参照: `Form.hpp` が `Bureaucrat` をポインタ／参照で使うなら、クラスの前方宣言で足りる。
+- `getGrade()` を呼ぶ実装は `.cpp` で `Bureaucrat.hpp` をインクルードする。
+- 循環インクルードをヘッダ同士で作らない。
 
 ---
 
-## 5. Bureaucrat 側に足すもの
-
-`signForm(Form &form)` をメンバに追加する。  
-ex00 のファイルをコピーしてから足す。Form を知らない旧ヘッダのままにしない。
-
-循環: `Bureaucrat.hpp` は `Form` の前方宣言、`signForm` の実装は `.cpp` で `Form.hpp` をインクルード。
+## 4. Bureaucrat 側に足すもの
+- `signForm(Form &form)` をメンバに追加。  
+- ex00 のファイルをコピーしたあと、`Bureaucrat.hpp` に `signForm` の宣言を足す。ex00 のヘッダをそのまま使わない。
+- `Bureaucrat.hpp` では `Form` を前方宣言する。
+- `signForm` の実装は `.cpp` で `Form.hpp` をインクルードする。
 
 ---
 
-## 6. テストに入れること
+## 5. テストに入れること
 
 - 作成時の等級 0 / 151 で Form 自身の例外
 - 権限が足りる署名、足りない署名
@@ -132,7 +150,7 @@ ex01 のレビューコメント（提出者不明）: 「例外に当てはま�
 
 ---
 
-## 7. 例外保証
+## 6. 例外保証
 
 `beSigned` は、throw するなら `_isSigned` を変えない。  
 先に `_isSigned = true` してから等級を見ると、失敗しても署名済みになる。
