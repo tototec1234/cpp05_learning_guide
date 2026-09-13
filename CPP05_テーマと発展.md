@@ -168,7 +168,9 @@ CPP05の段階的な拡張は、CPP04「Subtype Polymorphism, Abstract Classes, 
 - CPP04 ex01「I don’t want to set the world on fire」: ex00のクラスを引き継ぎ、`Brain`を追加して`Dog`と`Cat`に所有させる
 - CPP04 ex02「Abstract class」: 同じクラス群を引き継ぎ、`Animal`をインスタンス化できない抽象クラスへ変更する
 
-CPP04 ex02「Abstract class」では、`Animal`を`AAnimal`へ改名してもよいと課題書に書かれていた。CPP05 ex02「No, you need form 28B, not 28C...」では、`Form`を`AForm`へ改名することが課題の要求である。接頭辞 A は Abstract の慣習。言語仕様ではなく、CPP04 の AAnimal と同じ命名。
+	- CPP04 ex02「Abstract class」では、`Animal`を`AAnimal`へ改名してもよいと課題書に書かれていた。
+	- CPP05 ex02「No, you need form 28B, not 28C...」では、`Form`を`AForm`へ改名することが課題の要求である。
+	- 接頭辞 A は Abstract の慣習。言語仕様ではなく、CPP04 の AAnimal と同じ命名。
 
 <a id="review-virtual"></a>
 ### 3.3 virtualと動的多態性
