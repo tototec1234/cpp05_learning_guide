@@ -1,14 +1,14 @@
 # ex02 解説 — AForm と実行
 
 提出物: `Bureaucrat`、`AForm`、3つの具体 Form、`Makefile`、`main.cpp`  
-Form は「紙」から「手続き」になる。チェックは共通、`side effect` は個別。
+Form は「紙」から「手続き」になる。チェックは共通、PresidentialPardon,RobotomyRequest,ShrubberyCreationでそれぞれ独自の`side effect` を持つ。
 
 <details>
 <summary>ここでの side effect とは（クリックで表示）</summary>
 
 - 薬の副作用（避けたい付随物）ではない。
 - 関数が戻り値以外に、外の世界を変えること。ファイルを書く、標準出力に出す、が当たる。  
-- 上記の文では、`execute` が通ったあとに各 Form が行う本体の動作を指す。
+- 上記の文では、実行( ***execute***)が通ったあとに各 Form が行う本体の動作を指す。
 - チェック（署名済みか、等級は足りるか）は3クラス共通であるが、side effect（植樹・ロボトミー・恩赦）は各クラス固有。
 
 </details>
@@ -17,10 +17,8 @@ Form は「紙」から「手続き」になる。チェックは共通、`side 
 
 ## 1. ex01 からの変化
 
-```
-ex01 Form   : 署名できるかどうか
-ex02 AForm  : 署名したうえで、実行できるかどうか
-```
+ex01 Form   : 署名(***sign***)できるかどうか
+ex02 AForm  : 署名(***sign***)したうえで、実行(***execute***)できるかどうか
 
 3つの具体クラス:
 
@@ -36,11 +34,18 @@ ex02 AForm  : 署名したうえで、実行できるかどうか
 
 ## 2. チェックをどこに置くか
 
-課題書: 各具体クラスでチェックしてもよいし、基底でチェックして別関数を呼んでもよい。後者の方がきれい、と明記している。
-
-テンプレートメソッド:
+課題書 p13: 具体クラスでチェックしても、基底でチェックして別関数を呼んでもよい。
 
 ```
+Whether you check the requirements in every concrete class or in the base class (and
+then call another function to execute the form) is up to you. However, one way is more
+elegant than the other.
+```
+と書かれているが、
+共通処理を基底クラスにまとめ、別関数を呼ぶ形を Template Method という、通常はこちらのほうが elegant である。
+
+Template Method:
+```cpp
 AForm::execute(executor) const:
     if 未署名: throw 未署名例外
     if executor.grade数値 > _executeGrade: throw GradeTooLowException
@@ -56,8 +61,10 @@ PresidentialPardonForm::executeEachForm:
     恩赦の一文を出す
 ```
 
-派生が `execute` を全部自分で書くと、未署名チェックを1クラス忘れうる。  
+派生が***execute***を全部自分で書くと、未署名チェックを1クラス忘れうる。  
 基底に寄せると、忘れられない。
+なお、ドメイン操作 ***execute*** を純粋仮想にして、各派生クラスの `executeEachForm()` の先頭に同じ if をそれぞれ書く形も、当然機能する。課題書はどちらでもよい、としているが
+チェックが3箇所に分かれるので、elegant とは思えない。
 
 スケルトン:
 
@@ -77,9 +84,11 @@ private:
 };
 ```
 
-関数名 `executeEachForm` は課題指定ではない。仕事用の private/protected 純粋仮想であればよい。
+ドメイン操作 ***execute*** を実装するための純粋仮想の関数名 `executeEachForm` はこの実装例での命名であり、チェックを省いた処理本体（side effect）を担う pure virtual であれば名前は自由につけてよい。
 
-`execute` を純粋仮想にして、各派生の先頭で同じ if を3回書く、という形は動く。課題書が言うきれいな方ではない。
+`execute()` に `virtual` をつけないのは意図的である。
+- `virtual` があると派生クラスが `execute()` をオーバーライドしてチェックを丸ごと省ける。
+- Template Method の目的は「チェックを基底に固定し、派生クラスの実装者がチェックを書き忘れられない構造にする」ことなので、テンプレート本体（`execute()`）は非 `virtual` にする。
 
 ---
 
